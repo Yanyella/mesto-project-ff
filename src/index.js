@@ -1,6 +1,6 @@
 import './pages/index.css';
 import { initialCards } from './scripts/components/cards.js';
-import {openPopup, closeModalOverlay, closeModalCross} from './scripts/components/modal.js';
+import {openPopup, closeModal, closeModalOverlay, closeModalCross} from './scripts/components/modal.js';
 import {createCard, deleteCard, likeClick} from './scripts/components/card.js';
 
 // @todo: DOM узлы
@@ -22,7 +22,7 @@ const buttonAddCard = document.querySelector('.profile__add-button'); // кно�
 
 // кнопки закрытия модальных окон
 
-const buttonCloses = document.querySelectorAll('.popup__close');
+const buttonsClosesList = document.querySelectorAll('.popup__close');
 
 // элементы профиля
 
@@ -32,15 +32,15 @@ const profileDescription = profile.querySelector('.profile__description');
 
 // элементы формы профиля
 
-const form = document.forms['edit-profile'];
-const nameProfile = form['name'];
-const descriptionProfile = form['description'];
+const formProfile = document.forms['edit-profile'];
+const inputNameProfile = formProfile['name'];
+const inputDescriptionFormProfile = formProfile['description'];
 
 // элементы формы добавления каточек
 
 const formCard = document.forms['new-place'];
-const nameCard = formCard['place-name'];
-const linkCard = formCard['link'];
+const inputnameCard = formCard['place-name'];
+const inputLinkFormNewCard = formCard['link'];
 
 // элементы новой карточки
 
@@ -57,13 +57,14 @@ for(let i = 0; i < initialCards.length; i++) {
 
 // функция редактирования профиля 
 
-  function handleFormSubmit(evt) {
+  function handleFormProfileSubmit(evt) {
     evt.preventDefault(); 
        
-    profileTitle.textContent = nameProfile.value;
-    profileDescription.textContent =  descriptionProfile.value;
+    profileTitle.textContent = inputNameProfile.value;
+    profileDescription.textContent =  inputDescriptionFormProfile.value;
 
-    form.reset();
+    formProfile.reset();
+    closeModal(popupEdit);
 }
 
 // функция просмотра картинки при нажатии на нее
@@ -82,8 +83,8 @@ function previewImage(imageSrc, ImageAlt) {
 function addNewCard(evt) {
     evt.preventDefault(); 
        
-    const cardName = nameCard.value;
-    const cardUrl = linkCard.value;
+    const cardName = inputnameCard.value;
+    const cardUrl = inputLinkFormNewCard.value;
 
     const newCard = {
         name: cardName,
@@ -93,6 +94,7 @@ function addNewCard(evt) {
     const element = createCard(newCard, deleteCard, likeClick, previewImage);
     cardList.prepend(element);
     formCard.reset();
+    closeModal(popupNewCard);
 }
 
 // Обработчики событий
@@ -101,8 +103,8 @@ function addNewCard(evt) {
 
 buttonEdit.addEventListener('click', function(){
 
-    nameProfile.value = profileTitle.textContent;
-    descriptionProfile.value =  profileDescription.textContent;
+    inputNameProfile.value = profileTitle.textContent;
+    inputDescriptionFormProfile.value =  profileDescription.textContent;
 
     openPopup(popupEdit);
 })
@@ -115,7 +117,7 @@ popups.forEach(el => {
 
 // Закрытие модального окна с помощью крестика (итерация по всем кнопкам)
 
-buttonCloses.forEach(el => {
+buttonsClosesList.forEach(el => {
     el.addEventListener('click', closeModalCross);
 });
 
@@ -127,7 +129,7 @@ buttonAddCard.addEventListener('click', function() {
 
 // событие добавления имени и описания профиля
 
-form.addEventListener('submit', handleFormSubmit); 
+formProfile.addEventListener('submit', handleFormProfileSubmit);  
 
 // событие добавления названия и картинки в новую карточку
 
