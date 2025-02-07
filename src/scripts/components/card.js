@@ -21,7 +21,8 @@ export function createCard(item, functionDelCard, functionLike, viewImage) {
         functionLike(likeButton);
     });
     
-    card.addEventListener('click', function(){
+    const image = card.querySelector('.card__image');
+    image.addEventListener('click', function(){
         viewImage(item.link, item.name);   
 
     }); 
