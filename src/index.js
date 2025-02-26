@@ -1,12 +1,16 @@
 import './pages/index.css';
-import { initialCards } from './scripts/components/cards.js';
-import {openPopup, closeModal, closeModalOverlay, closeModalCross} from './scripts/components/modal.js';
-import {createCard, deleteCard, likeClick} from './scripts/components/card.js';
+import {openPopup, closeModal, closeModalOverlay, closeModalCross} from './scripts/components/modal.js'; // импорт функция модалок
+import {createCard, deleteCard, likeClick} from './scripts/components/card.js'; // импорт функций создания, удаления, лафка карточки
+import {getProfileData, getCards, getEditProfile, getEditCard, delCardOnServer} from './scripts/components/api.js'; // импорт функций запросов к серверу
 
 // @todo: DOM узлы
 
 const container = document.querySelector('.content');
 const cardList = container.querySelector('.places__list');
+
+// элемент аватарки
+
+const profileAvatar = document.querySelector('.logo');
 
 // модальные окна
 
@@ -47,25 +51,41 @@ const inputLinkFormNewCard = formCard['link'];
 const image = document.querySelector('.popup__image');
 const imageElemcaption = document.querySelector('.popup__caption');
 
+// объект валидации
+
+const validator = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error'
+}
 
 // @todo: Вывести карточки на страницу
 
-for(let i = 0; i < initialCards.length; i++) {
+/*for(let i = 0; i < initialCards.length; i++) {
     const element = createCard(initialCards[i], deleteCard, likeClick, previewImage);
     cardList.append(element);
-}
+}*/
 
 // функция редактирования профиля 
 
   function handleFormProfileSubmit(evt) {
     evt.preventDefault(); 
        
-    profileTitle.textContent = inputNameProfile.value;
-    profileDescription.textContent =  inputDescriptionFormProfile.value;
+    const nameEditProfile = inputNameProfile.value;
+    const descriptionEditProfile =  inputDescriptionFormProfile.value;
 
-    formProfile.reset();
-    closeModal(popupEdit);
-}
+    getEditProfile(nameEditProfile, descriptionEditProfile)
+      .then((data) => {
+        profileTitle.textContent = data.nameEditProfile;
+        profileDescription.textContent = data.descriptionEditProfile
+      })
+
+      formProfile.reset();
+      closeModal(popupEdit);
+    }
 
 // функция просмотра картинки при нажатии на нее
 
@@ -86,15 +106,27 @@ function addNewCard(evt) {
     const cardName = inputnameCard.value;
     const cardUrl = inputLinkFormNewCard.value;
 
-    const newCard = {
-        name: cardName,
-        link: cardUrl,
+    getEditCard(cardName, cardUrl)
+    .then(data => {
+      const newCard = {
+        name: data.cardName,
+        link: data.cardUrl,
     }
 
-    const element = createCard(newCard, deleteCard, likeClick, previewImage);
+    const element = createCard(newCard, handleDeleteCard, likeClick, previewImage, userId);
     cardList.prepend(element);
     formCard.reset();
     closeModal(popupNewCard);
+    })  
+}
+
+// функция удаления карточки
+
+function handleDeleteCard(cardElement, cardId) {
+  delCardOnServer(cardId)
+    .then(() => {
+      deleteCard(cardElement);
+  })
 }
 
 // Обработчики событий
@@ -134,3 +166,24 @@ formProfile.addEventListener('submit', handleFormProfileSubmit);
 // событие добавления названия и картинки в новую карточку
 
 formCard.addEventListener('submit', addNewCard); 
+
+// функция вывода карточек на страницу с сервера
+
+let userId;
+
+Promise.all([getProfileData(), getCards()])
+
+  .then(([user, cards]) => {
+    
+    userId = user['_id'];
+
+    for(let i = 0; i < cards.length; i++) {
+      const element = createCard(cards[i], handleDeleteCard, likeClick, previewImage, userId);
+      cardList.append(element);
+    }
+
+    profileTitle.textContent = user.name;
+    profileDescription.textContent = user.about;
+    profileAvatar.setAttribute('style', `background-image: ${user.avatar}`);
+
+})

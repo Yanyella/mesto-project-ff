@@ -36,10 +36,42 @@
     <div class="popup__content">
       <button type="button" class="popup__close"></button>
       <h3 class="popup__title">Редактировать профиль</h3>
-      <form class="popup__form" name="edit-profile">
-        <input type="text" name="name" class="popup__input popup__input_type_name" placeholder="Имя" value="Имя">
-        <input type="text" name="description" class="popup__input popup__input_type_description" placeholder="Занятие" value="Занятие">
-        <button type="submit" class="button popup__button">Сохранить</button>
+      <form class="popup__form" name="edit-profile" novalidate>
+        <input 
+          type="text" 
+          id="input__name" 
+          pattern="^[a-zA-Zа-яА-ЯЁё \-]+$" 
+          data-error-message="Разрешены символы латиницы, кириллицы, знаки дефиса и пробелы."
+          aria-describedby="name-error"
+          name="name" 
+          class="popup__input popup__input_type_name" 
+          placeholder="Имя" 
+          minlength="2" 
+          maxlength="40" 
+          required>
+        <span 
+          class="form__error input__name-error" 
+          id="name-error"
+          aria-live="polite">
+        </span>
+        <input 
+          type="text" 
+          id="input__description" 
+          pattern="^[a-zA-Zа-яА-ЯЁё \-]+$" 
+          data-error-message="Разрешены символы латиницы, кириллицы, знаки дефиса и пробелы."
+          aria-describedby="description-error"
+          name="description" 
+          class="popup__input popup__input_type_description" 
+          placeholder="Занятие" 
+          minlength="2" 
+          maxlength="200" 
+          required>
+        <span 
+          class="form__error input__description-error" 
+          id="description-error"
+          aria-live="polite">
+        </span>
+        <button type="submit" class="button popup__button" aria-describedby="empty-error">Сохранить</button>
       </form>
     </div>
   </div>
@@ -47,10 +79,10 @@
     <div class="popup__content">
       <button type="button" class="popup__close"></button>
       <h3 class="popup__title">Новое место</h3>
-      <form class="popup__form" name="new-place">
+      <form class="popup__form" name="new-place" novalidate>
         <input type="text" name="place-name" class="popup__input popup__input_type_card-name" placeholder="Название" required>
         <input type="url" name="link" class="popup__input popup__input_type_url" placeholder="Ссылка на картинку" required>
-        <button type="submit" class="button popup__button">Сохранить</button>
+        <button type="submit" class="button popup__button" aria-describedby="empty-error">Сохранить</button>
       </form>
     </div>
   </div>
