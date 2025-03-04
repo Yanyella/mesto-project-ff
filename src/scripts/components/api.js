@@ -10,6 +10,21 @@ function checkStatus(res) {
     return res.json();
 }
 
+// функция обновления аватара
+
+export function patchAvatar(url) {
+    return fetch(`${URL}/users/me/avatar `, {
+        method: 'PATCH',
+        headers: { 
+             authorization: `${TOKEN}`,
+        },
+        body: JSON.stringify({
+			avatar: url
+		}),
+    })
+    .then(checkStatus);
+}
+
 // функция загрузки информации о пользователе с сервера
 
 export function getProfileData() {
@@ -83,9 +98,36 @@ export function getEditCard(name, link) {
         },  
         body: JSON.stringify({
             name: name,
-            about: link
+            link: link
         })
     })
     .then(checkStatus);
 }
+
+// функция запроса лайка с сервера
+
+export function putLikeCard(cardId) {
+    return fetch(`${URL}/cards/likes/${cardId}`, {
+        method: 'PUT',
+        headers: { 
+             authorization: `${TOKEN}`,
+        }
+    })
+    .then(checkStatus)
+}
+
+// функция удаления лайка с карточки
+
+export function delLikeCard(cardId) {
+    return fetch(`${URL}/cards/likes/${cardId}`, {
+        method: 'DELETE',
+        headers: { 
+             authorization: `${TOKEN}`,
+        }
+    })
+    .then(checkStatus);
+}
+
+
+
 

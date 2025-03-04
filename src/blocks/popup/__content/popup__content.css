@@ -9,6 +9,14 @@
   padding: 34px 36px;
 }
 
+.popup__content-avatar {
+  min-height: 181px;
+}
+
+.popup__content-card {
+  min-height: 181px;
+}
+
 @media screen and (max-width: 568px) {
   .popup__content {
     width: 100%;

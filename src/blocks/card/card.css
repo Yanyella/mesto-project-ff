@@ -13,3 +13,10 @@
   position: relative;
   overflow: hidden;
 }
+
+.card__like {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}

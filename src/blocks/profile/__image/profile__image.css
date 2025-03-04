@@ -7,6 +7,25 @@
   background-size: cover;
   background-position: center;
   margin: 0 29px 0 0;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile__image::after {
+  content: '';
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.8) url('../../../images/Vector.svg') no-repeat center;
+  opacity: 0;
+  transition: 0.3 ease-in-out;
+}
+
+.profile__image:hover::after {
+  opacity: 1;
 }
 
 @media screen and (max-width: 740px) {

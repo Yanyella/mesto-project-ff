@@ -41,3 +41,4 @@ export function closeModalCross(evt) {
     const popup = evt.target.closest('.popup');
     closeModal(popup);
 }
+

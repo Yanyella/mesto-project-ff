@@ -2,7 +2,7 @@
     margin-top: 27px;
 }
 
-.form__input_type_error {
+.popup__input_type_error {
     border-bottom: 1px solid #FF0000;
 }
 

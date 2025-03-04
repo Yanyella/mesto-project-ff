@@ -1,7 +1,8 @@
 import './pages/index.css';
 import {openPopup, closeModal, closeModalOverlay, closeModalCross} from './scripts/components/modal.js'; // импорт функция модалок
-import {createCard, deleteCard, likeClick} from './scripts/components/card.js'; // импорт функций создания, удаления, лафка карточки
-import {getProfileData, getCards, getEditProfile, getEditCard, delCardOnServer} from './scripts/components/api.js'; // импорт функций запросов к серверу
+import {createCard, deleteCard, togglelikeCardAndCountLikeCard} from './scripts/components/card.js'; // импорт функций создания, удаления, лафка карточки
+import {getProfileData, getCards, getEditProfile, getEditCard, delCardOnServer, putLikeCard, delLikeCard, patchAvatar} from './scripts/components/api.js'; // импорт функций запросов к серверу
+import {enableValidation} from './scripts/components/validation.js'; // импорт функции валидации
 
 // @todo: DOM узлы
 
@@ -10,7 +11,7 @@ const cardList = container.querySelector('.places__list');
 
 // элемент аватарки
 
-const profileAvatar = document.querySelector('.logo');
+const profileAvatar = document.querySelector('.profile__image');
 
 // модальные окна
 
@@ -18,6 +19,8 @@ const popups = document.querySelectorAll('.popup');
 const popupEdit = document.querySelector('.popup_type_edit'); // профиль
 const popupNewCard = document.querySelector('.popup_type_new-card'); // добавление новой карточки
 const popupImage = document.querySelector('.popup_type_image'); // просмотр карточки
+const popupAvatar = document.querySelector('.popup_type_new-avatar'); // аватар
+const popupDelCard = document.querySelector('.popup_type_delete-card'); // удаление карточки
 
 // кнопки открытия модальных окон
 
@@ -27,6 +30,10 @@ const buttonAddCard = document.querySelector('.profile__add-button'); // кно�
 // кнопки закрытия модальных окон
 
 const buttonsClosesList = document.querySelectorAll('.popup__close');
+
+// кнопка удаления карточки
+
+const buttonDelCard = popupDelCard.querySelector('.popup__button');
 
 // элементы профиля
 
@@ -39,12 +46,20 @@ const profileDescription = profile.querySelector('.profile__description');
 const formProfile = document.forms['edit-profile'];
 const inputNameProfile = formProfile['name'];
 const inputDescriptionFormProfile = formProfile['description'];
+const btnFormProfile = formProfile.querySelector('.popup__button');
+
+// элементы формы аватара
+
+const formAvatar = document.forms['edit-avatar'];
+const inputFormLinkAvatar = formAvatar['link'];
+const btnFormAvatar = formAvatar.querySelector('.popup__button');
 
 // элементы формы добавления каточек
 
 const formCard = document.forms['new-place'];
 const inputnameCard = formCard['place-name'];
 const inputLinkFormNewCard = formCard['link'];
+const btnFormCard = formCard.querySelector('.popup__button');
 
 // элементы новой карточки
 
@@ -53,14 +68,18 @@ const imageElemcaption = document.querySelector('.popup__caption');
 
 // объект валидации
 
-const validator = {
-  formSelector: '.popup__form',
-  inputSelector: '.popup__input',
-  submitButtonSelector: '.popup__button',
+const validObj = {
+  formSelector: 'popup__form',
+  inputSelector: 'popup__input',
+  submitButtonSelector: 'popup__button',
   inactiveButtonClass: 'popup__button_disabled',
   inputErrorClass: 'popup__input_type_error',
   errorClass: 'popup__error'
 }
+
+// запуск функции валидации 
+
+enableValidation(validObj);
 
 // @todo: Вывести карточки на страницу
 
@@ -69,22 +88,65 @@ const validator = {
     cardList.append(element);
 }*/
 
+// функция вывода карточек на страницу с сервера
+
+let userId;
+
+Promise.all([getProfileData(), getCards()])
+
+  .then(([user, cards]) => {
+    
+    userId = user['_id'];
+
+    for(let i = 0; i < cards.length; i++) {
+      const element = createCard(cards[i], handleDeleteCard, handleLikeCard, previewImage, userId);
+      cardList.append(element);
+    }
+
+    profileTitle.textContent = user.name;
+    profileDescription.textContent = user.about;
+    profileAvatar.style.backgroundImage = `url(${user.avatar})`;
+
+})
+
+    // функция редактирования аватара 
+
+   function handleFormAvatarSubmit(evt) {
+
+      evt.preventDefault(); 
+  
+      btnFormAvatar.textContent = "Сохранение...";
+
+      const avatar = inputFormLinkAvatar.value;
+                
+      patchAvatar(avatar)
+        .then((data) => {
+          profileAvatar.style.backgroundImage = `url(${data.avatar})`;
+        })      
+
+        formAvatar.reset();
+        closeModal(popupEdit);
+  }
+      
 // функция редактирования профиля 
 
   function handleFormProfileSubmit(evt) {
     evt.preventDefault(); 
-       
+
+    btnFormProfile.textContent = "Сохранение...";
+
     const nameEditProfile = inputNameProfile.value;
     const descriptionEditProfile =  inputDescriptionFormProfile.value;
 
     getEditProfile(nameEditProfile, descriptionEditProfile)
       .then((data) => {
         profileTitle.textContent = data.nameEditProfile;
-        profileDescription.textContent = data.descriptionEditProfile
-      })
+        profileDescription.textContent = data.descriptionEditProfile;
 
-      formProfile.reset();
-      closeModal(popupEdit);
+        formProfile.reset();
+        closeModal(popupEdit);
+      })
+      
     }
 
 // функция просмотра картинки при нажатии на нее
@@ -102,34 +164,71 @@ function previewImage(imageSrc, ImageAlt) {
 
 function addNewCard(evt) {
     evt.preventDefault(); 
+
+    btnFormCard.textContent = 'Сохранение...'; 
        
-    const cardName = inputnameCard.value;
-    const cardUrl = inputLinkFormNewCard.value;
+    getEditCard(inputnameCard.value, inputLinkFormNewCard.value)
 
-    getEditCard(cardName, cardUrl)
-    .then(data => {
-      const newCard = {
-        name: data.cardName,
-        link: data.cardUrl,
-    }
-
-    const element = createCard(newCard, handleDeleteCard, likeClick, previewImage, userId);
-    cardList.prepend(element);
+      .then((card) => {
+        const element = createCard(card, handleDeleteCard, handleLikeCard, previewImage, userId);
+        cardList.prepend(element);
+     
+    }) 
+    
     formCard.reset();
     closeModal(popupNewCard);
-    })  
-}
+  }   
 
-// функция удаления карточки
+// функция удаления карточки 
 
 function handleDeleteCard(cardElement, cardId) {
-  delCardOnServer(cardId)
-    .then(() => {
-      deleteCard(cardElement);
+
+    openPopup(popupDelCard);
+
+    buttonDelCard.addEventListener('click', function() {
+      delCardOnServer(cardId)
+      .then(() => {
+        deleteCard(cardElement);
+      
+      closeModal(popupDelCard);
   })
+    })
 }
 
-// Обработчики событий
+// Функция переключения класса лайка и кол-ва лайков
+
+function handleLikeCard(evt, countLikesCard, cardId) {
+
+  // если класса нет, то добавляем класс и увеличиваем число лайков на 1
+  if (!evt.target.classList.contains('card__like-button_is-active')) {
+    
+    putLikeCard(cardId)
+      .then((res) => {
+        togglelikeCardAndCountLikeCard(evt, countLikesCard, res);
+      })
+
+     // если класс есть, то удаляем класс и уменьшаем число лайков на 1
+  } else {
+    delLikeCard(cardId)
+      .then((res) => {
+        togglelikeCardAndCountLikeCard(evt, countLikesCard, res);
+      })
+    }
+};
+
+// событие открытия модального окна для замены аватара
+
+profileAvatar.addEventListener('click', function() {
+
+  inputFormLinkAvatar.value = '';
+
+  openPopup(popupAvatar);
+  
+})
+
+// событие добавления нового автара
+
+btnFormAvatar.addEventListener('submit', handleFormAvatarSubmit);
 
 // событие открытия модального окна профиля
 
@@ -167,23 +266,6 @@ formProfile.addEventListener('submit', handleFormProfileSubmit);
 
 formCard.addEventListener('submit', addNewCard); 
 
-// функция вывода карточек на страницу с сервера
 
-let userId;
 
-Promise.all([getProfileData(), getCards()])
 
-  .then(([user, cards]) => {
-    
-    userId = user['_id'];
-
-    for(let i = 0; i < cards.length; i++) {
-      const element = createCard(cards[i], handleDeleteCard, likeClick, previewImage, userId);
-      cardList.append(element);
-    }
-
-    profileTitle.textContent = user.name;
-    profileDescription.textContent = user.about;
-    profileAvatar.setAttribute('style', `background-image: ${user.avatar}`);
-
-})
