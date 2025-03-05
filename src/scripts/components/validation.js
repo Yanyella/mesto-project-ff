@@ -22,14 +22,19 @@ function hideInputError(formElement, inputElement, validObj){
 
 // функция показа или скрытия ошибок 
 
-function checkInputValidity(formElement, inputElement, validObj) {
+function isValid (formElement, inputElement, validObj) {
 
-  if (!inputElement.validity.valid) {
-    showInputError(formElement, inputElement, inputElement.validationMessage, validObj);
+  if (inputElement.validity.patternMismatch) {
+      inputElement.setCustomValidity(inputElement.dataset.errorMessage);
   } else {
-    hideInputError(formElement, inputElement, validObj);
+    inputElement.setCustomValidity("");
   }
 
+  if (!inputElement.validity.valid) {
+  showInputError(formElement, inputElement, inputElement.validationMessage,  validObj);
+  } else {
+  hideInputError(formElement, inputElement, validObj);
+  }
 };
 
 // функция активации и дезактивации кнопки формы
@@ -37,12 +42,12 @@ function checkInputValidity(formElement, inputElement, validObj) {
 function setEventListeners(formElement, validObj) {
 
   const inputList = Array.from(formElement.querySelectorAll(validObj.inputSelector));
-  const buttonElement = formElement.querySelector(validObj.inactiveButtonClass);
-  toggleButtonState(inputList, buttonElement);
+  const buttonElement = formElement.querySelector(validObj.submitButtonSelector);
+  toggleButtonState(inputList, buttonElement, validObj);
   inputList.forEach((inputElement) => {
     inputElement.addEventListener('input', function () {
-      checkInputValidity(formElement, inputElement, validObj);
-      toggleButtonState(inputList, buttonElement);
+      isValid(formElement, inputElement, validObj);
+      toggleButtonState(inputList, buttonElement, validObj);
     });
   });
 
@@ -54,12 +59,8 @@ export function enableValidation(validObj) {
 
   const formList = Array.from(document.querySelectorAll(validObj.formSelector));
   formList.forEach((formElement) => {
-    formElement.addEventListener('submit', function (evt) {
-      evt.preventDefault();
+      setEventListeners(formElement, validObj);
     });
-    setEventListeners(formElement, validObj)
-});
-  ;
 };
 
 // функция проверки на валидность инпутов
@@ -72,11 +73,15 @@ function hasInvalidInput(inputList){
 
 // функция добавления класса кнопке
 
-export function toggleButtonState(inputList, buttonElement, validObj) {
+function toggleButtonState(inputList, buttonElement, validObj) {
+
   if(hasInvalidInput(inputList)){
     buttonElement.classList.add(validObj.inactiveButtonClass);
+    buttonElement.disabled = true;
+
   } else {
     buttonElement.classList.remove(validObj.inactiveButtonClass);
+    buttonElement.disabled = false;
   }
 }
 
@@ -91,4 +96,5 @@ export function clearValidation(formElement, validObj) {
     hideInputError(formElement, inputElement, validObj);
     toggleButtonState(inputList, buttonElement, validObj);
   })
+  
 }

@@ -17,6 +17,7 @@ export function patchAvatar(url) {
         method: 'PATCH',
         headers: { 
              authorization: `${TOKEN}`,
+             "Content-Type": "application/json",
         },
         body: JSON.stringify({
 			avatar: url
