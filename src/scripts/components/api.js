@@ -35,9 +35,6 @@ export function getProfileData() {
         } 
     })
     .then(checkStatus)
-    .catch(error => {
-        console.error(`Ошибка: ${error}`)
-    })
 }
 
 // функция удаления карточки на сервере
@@ -52,9 +49,6 @@ export function getProfileData() {
         }
     })
     .then(checkStatus)
-    .catch(error => {
-        console.error(`Ошибка: ${error}`)
-    })
 }
 
 // функция загрузки карточек с сервера
@@ -66,9 +60,6 @@ export function getCards() {
         }
     })
     .then(checkStatus)
-    .catch(error => {
-        console.error(`Ошибка: ${error}`)
-    })
 }
 
 // функция загрузки профиля с сервера для дальнейшего его редактирования

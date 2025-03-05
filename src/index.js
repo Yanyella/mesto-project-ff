@@ -81,13 +81,6 @@ const formValidationConfig = {
   errorClass: "popup__error",
 };
 
-// @todo: Вывести карточки на страницу
-
-/*for(let i = 0; i < initialCards.length; i++) {
-    const element = createCard(initialCards[i], deleteCard, likeClick, previewImage);
-    cardList.append(element);
-}*/
-
 // функция вывода карточек на страницу с сервера
 
 let userId;
@@ -124,7 +117,6 @@ function handleFormAvatarSubmit(evt) {
       profileAvatar.style.backgroundImage = `url(${data.avatar})`;
 
      formAvatar.reset(); // сбрасываем данные формы
-     showLoadingSave(false, btnFormAvatar); 
      closeModal(popupAvatar); // закрываем модальное окно
      clearValidation(formAvatar, formValidationConfig); // убираем валидацию 
     })  
@@ -132,6 +124,10 @@ function handleFormAvatarSubmit(evt) {
     .catch((error) => {
       console.error('Ошибка при редактировании аватара:' + error);
 
+    })
+
+    .finally(() => {
+      showLoadingSave(false, btnFormAvatar); 
     })
 }
       
@@ -153,13 +149,16 @@ function handleFormProfileSubmit(evt) {
       profileDescription.textContent = data.descriptionEditProfile; 
 
       formProfile.reset(); // сбрасываем данные формы
-      showLoadingSave(false, btnFormProfile);
       closeModal(popupEdit);  // закрываем модальное окно
       clearValidation(formProfile, formValidationConfig); // убираем валидацию 
     })   
     
     .catch((error) => {
       console.error('Ошибка при редактировании профиля:' + error);
+    })
+
+    .finally(() => {
+      showLoadingSave(false, btnFormProfile);
     })
     
 }
@@ -190,7 +189,6 @@ function addNewCard(evt) {
         cardList.prepend(element);
 
       formCard.reset(); // сбрасываем данные формы
-      showLoadingSave(false, btnFormCard);
       closeModal(popupNewCard); // закрываем модальное окно  
       clearValidation(formCard, formValidationConfig); // убираем валидацию 
     })
@@ -199,6 +197,10 @@ function addNewCard(evt) {
       console.error('Ошибка при добавлении карточки:' + error);
 
      })
+
+     .finally(() => {
+      showLoadingSave(false, btnFormCard);
+    })
 
   }   
 
@@ -214,10 +216,13 @@ function handleDeleteCard(cardElement, cardId) {
       delCardOnServer(cardId)
       .then(() => {
         deleteCard(cardElement);
-       
-      showLoadingDelete(true, buttonDelCard);  
+      
       closeModal(popupDelCard); // закрываем модальное окно
 
+    })
+
+    .finally(() => {
+      showLoadingDelete(true, buttonDelCard);  
     })
   })
 }
@@ -226,32 +231,21 @@ function handleDeleteCard(cardElement, cardId) {
 
 function handleLikeCard(evt, countLikesCard, cardId) {
 
-  // если класса нет, то добавляем класс и увеличиваем число лайков на 1
-  if (!evt.target.classList.contains('card__like-button_is-active')) {
+const likeMethod = evt.target.classList.contains('card__like-button_is-active') ? delLikeCard: putLikeCard;
+
+likeMethod(cardId) 
+    .then((res) => {
+      togglelikeCardAndCountLikeCard(evt, countLikesCard, res) 
+    })
     
-    putLikeCard(cardId)
-      .then((res) => {
-        togglelikeCardAndCountLikeCard(evt, countLikesCard, res);
-      })
-    }
-     // если класс есть, то удаляем класс и уменьшаем число лайков на 1
-    else {
-      delLikeCard(cardId)
-        .then((res) => {
-          togglelikeCardAndCountLikeCard(evt, countLikesCard, res);
-      })
-    }
+    .catch(err => console.log(err));
 };
 
 // функция, изменяющая текст кнопки "Сохранить" при загрузки
 
 function showLoadingSave(loading, buttonElement) {
 
-  if(!loading) {
-    buttonElement.textContent = "Сохранить";
-  } else {
-    buttonElement.textContent = "Сохранение...";
-  }
+  buttonElement.textContent = loading ? "Сохранить" : "Сохранение...";
 
 }
 
@@ -259,11 +253,7 @@ function showLoadingSave(loading, buttonElement) {
 
 function showLoadingDelete(loading, buttonElement) {
 
-  if(!loading) {
-    buttonElement.textContent = "Да";
-  } else {
-    buttonElement.textContent = "Удаление...";
-  }
+  buttonElement.textContent = loading ? "Удаление..." : "Да";
 
 }
 
