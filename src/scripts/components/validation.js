@@ -47,9 +47,9 @@ function setEventListeners(formElement, validObj) {
   inputList.forEach((inputElement) => {
     inputElement.addEventListener('input', function () {
       isValid(formElement, inputElement, validObj);
+      toggleButtonState(inputList, buttonElement, validObj);
     });
   });
-
 };
 
 // функция валидации форм
@@ -88,12 +88,11 @@ function toggleButtonState(inputList, buttonElement, validObj) {
 
 export function clearValidation(formElement, validObj) {
 
-  const inputElementList = formElement.querySelectorAll(validObj.inputSelector);
+  const inputList = formElement.querySelectorAll(validObj.inputSelector);
   const buttonElement = formElement.querySelector(validObj.submitButtonSelector);
 
-  inputElementList.forEach((inputElement) => {
+  inputList.forEach((inputElement) => {
     hideInputError(formElement, inputElement, validObj);
-    toggleButtonState(inputList, buttonElement, validObj);
   })
-  
+  toggleButtonState(inputList, buttonElement, validObj);
 }
